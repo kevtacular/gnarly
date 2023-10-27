@@ -17,14 +17,35 @@ _gnarly_check_yq() {
   return 0
 }
 
+_gnarly_find_cfg_file() {
+  local dir=$(realpath $PWD)
+  while [ true ]; do
+    if [ "$dir" = "" ]; then
+      gnarly_cfg_file=""
+      break
+    else
+      gnarly_cfg_file="$dir/.gnarly/bash.yml"
+      if [ -f "$gnarly_cfg_file" ]; then
+        break
+      fi
+      dir=${dir%/*}
+    fi
+  done
+}
+
 _gnarly_command() {
+  local cmd=""
+
   _GNARLY_CMD=$1
 
   # lookup the command in bash.yml
-  cmd=$(yq .commands.$1 bash.yml)
-  _gdebug "command $1 resolved to: ${cmd}"
+  _gnarly_find_cfg_file
+  if [ "$gnarly_cfg_file" != "" ]; then
+    cmd=$(yq .commands.$1 $gnarly_cfg_file)
+    _gdebug "command $1 resolved to: ${cmd}"
+  fi
 
-  if [ "$cmd" = "null" ]; then
+  if [ "$cmd" = "" ] || [ "$cmd" = "null" ]; then
     $@
   else
     eval "${cmd}"

@@ -1,5 +1,7 @@
 # GNARLY - A Gnarlier Alias
 
+## Overview
+
 Gnarly is similar to the aliases commonly used in shells such as bash, but the
 alias definitions are stored in YAML files.
 
@@ -59,7 +61,30 @@ configuration:
 ; Run `npm config ls -l` to show all defaults.
 ```
 
-## TODO
+## Config File Search Path
 
-* Search for `.gnarly` directories up the directory hierarchy to search for
-  gnarly commands.
+As described in the Overview, the commands exutable by `gnarly` are defined in
+a `bash.yml` file located in a directory named `.gnarly`.
+
+`gnarly` first looks for this `.gnarly` directory in the current working
+directory. If it exists and contains a file named `bash.yml`, then the command
+to be executed is looked up in this file. Otherwise, `gnarly` iterates through
+all parent directories of the current working directory looking for a
+`.gnarly/bash.yml` file until one is found. If no file is found, then a
+"command not found" error message is echoed, and `gnarly` exits.
+
+For example, say you have created a `gnarly` config file at this location:
+
+`/projects/myproj/.gnarly/bash.yml`
+
+In that case, you can execute `gnarly` commands from this config file in any
+child directory of `/projects/myproj`, such as `/projects/myproj/src/app/profile`.
+
+In this way, the commands configured in your `.gnarly/bash.yml` file can be
+tailored to this particular project and activated only when you are in this
+directory or any subdirectory. Contrast this with bash aliases, which apply
+regardless of which directory you are in.
+
+As a result, `gnarly` is very useful as a way of managing several commands or
+small scripts that are frequently used in a project. The `gnarly` config file
+can be checked into version control and shared with other team members as well.
