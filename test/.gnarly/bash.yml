@@ -1,5 +1,6 @@
 commands:
   start: npm run start
+  nodever: node --version
   npminfo: |
     echo "version: $(npm --version)"
     echo "configuration:"
