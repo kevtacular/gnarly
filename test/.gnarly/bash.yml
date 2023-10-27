@@ -1,0 +1,6 @@
+commands:
+  start: npm run start
+  npminfo: |
+    echo "version: $(npm --version)"
+    echo "configuration:"
+    npm config list
