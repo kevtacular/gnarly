@@ -46,19 +46,28 @@ _gnarly_command() {
       # Read command args and set variables for each
       local i=0
       local arg=""
+      local gcommand=$1
       while [ true ]; do
-        arg=$(yq .commands.$1.args[$i] $gnarly_cfg_file)
+        arg=$(yq .commands.$gcommand.args[$i] $gnarly_cfg_file)
         if [ "$arg" = "null" ]; then
           break
         fi
+
+        shift
+        if [ "$1" = "" ]; then
+          echo "Missing argument $arg for gnarly command '$gcommand'"
+          return 1
+        fi
+        eval "$arg=$1"
+        _gdebug "arg $arg=$1"
+
         ((i++))
-        eval "$arg=\$$((i + 1))"
       done
     else
       # Simple command with no args
       cmd=$(yq .commands.$1 $gnarly_cfg_file)
     fi
-    _gdebug "command $1 resolved to: ${cmd}"
+    _gdebug "command $_GNARLY_CMD resolved to: ${cmd}"
   fi
 
   if [ "$cmd" = "" ] || [ "$cmd" = "null" ]; then
