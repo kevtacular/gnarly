@@ -5,3 +5,7 @@ commands:
     echo "version: $(npm --version)"
     echo "configuration:"
     npm config list
+  lsdir:
+    args:
+    - G_DIR # the directory to list
+    script: ls $G_DIR

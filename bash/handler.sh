@@ -41,13 +41,31 @@ _gnarly_command() {
   # lookup the command in bash.yml
   _gnarly_find_cfg_file
   if [ "$gnarly_cfg_file" != "" ]; then
-    cmd=$(yq .commands.$1 $gnarly_cfg_file)
+    cmd=$(yq .commands.$1.script $gnarly_cfg_file)
+    if [ "$cmd" != "" ]; then
+      # Read command args and set variables for each
+      local i=0
+      local arg=""
+      while [ true ]; do
+        arg=$(yq .commands.$1.args[$i] $gnarly_cfg_file)
+        if [ "$arg" = "null" ]; then
+          break
+        fi
+        ((i++))
+        eval "$arg=\$$((i + 1))"
+      done
+    else
+      # Simple command with no args
+      cmd=$(yq .commands.$1 $gnarly_cfg_file)
+    fi
     _gdebug "command $1 resolved to: ${cmd}"
   fi
 
   if [ "$cmd" = "" ] || [ "$cmd" = "null" ]; then
+    # No command to execute; treat as a normal shell "command not found"
     $@
   else
+    # Execute the gnarly command script
     eval "${cmd}"
   fi
 }
