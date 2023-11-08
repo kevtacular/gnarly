@@ -47,6 +47,7 @@ _gnarly_command() {
       local i=0
       local arg=""
       local gcommand=$1
+
       while [ true ]; do
         arg=$(yq .commands.$gcommand.args[$i] $gnarly_cfg_file)
         if [ "$arg" = "null" ]; then
@@ -96,4 +97,14 @@ command_not_found_handle() {
   fi
 
   _gdebug "--- end handler ---"
+}
+
+gnarly () {
+  _gnarly_find_cfg_file
+  if [ "$gnarly_cfg_file" != "" ]; then
+    yq '.commands.* | key' $gnarly_cfg_file
+  else
+    echo "No gnarly commands found"
+    return 127
+  fi
 }
