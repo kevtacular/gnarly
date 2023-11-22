@@ -18,7 +18,7 @@ _gnarly_check_yq() {
 }
 
 _gnarly_find_cfg_file() {
-  local dir=$(realpath $PWD)
+  local dir=$(realpath "$PWD")
   while [ true ]; do
     if [ "$dir" = "" ]; then
       gnarly_cfg_file=""
@@ -101,6 +101,7 @@ command_not_found_handle() {
 
 gnarly () {
   _gnarly_find_cfg_file
+  _gdebug "gnarly_cfg_file = $gnarly_cfg_file"
   if [ "$gnarly_cfg_file" != "" ]; then
     yq '.commands.* | key' $gnarly_cfg_file
   else
