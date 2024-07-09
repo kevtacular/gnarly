@@ -99,11 +99,41 @@ command_not_found_handle() {
   _gdebug "--- end handler ---"
 }
 
+_gnarly_verbose() {
+  # TODO Figure out how to indicate that a multi-line command has more than the one line that is displayed
+  readarray commands < <(yq e '.commands | to_entries() | .[] | ((select(.value.script == null) | .key + ": " + (.value | split("\n") | .[0])), (select(.value.script != null) | .key + ": [script]"))' $gnarly_cfg_file)
+  printf "%s\n" "${commands[@]}" | sort | while read line; do
+    if [ "$line" != "" ]; then echo "$line"; fi
+  done
+}
+
+_gnarly_show() {
+  local cmd=$(yq .commands.$1 $gnarly_cfg_file)
+  if [ "$cmd" = "null" ]; then
+    echo "Command not found: $1"
+    return 1
+  fi
+  echo "$cmd"
+}
+
 gnarly () {
   _gnarly_find_cfg_file
   _gdebug "gnarly_cfg_file = $gnarly_cfg_file"
   if [ "$gnarly_cfg_file" != "" ]; then
-    yq '.commands.* | key' $gnarly_cfg_file
+    if [ "$1" = "-v" ]; then
+      _gnarly_verbose
+    elif [ "$1" = "show" ]; then
+      if [ $# -lt 2 ]; then
+        echo "Usage: gnarly show <command>"
+        return 1
+      fi
+      _gnarly_show $2
+    elif [ $# -gt 0 ]; then
+      echo "Usage: gnarly [-v | show <command>]"
+      return 1
+    else
+      yq '.commands.* | key' $gnarly_cfg_file
+    fi
   else
     echo "No gnarly commands found"
     return 127
