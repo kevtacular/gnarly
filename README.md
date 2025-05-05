@@ -14,24 +14,24 @@ not found. For example, if you try to execute this command in your bash shell,
 the shell will not likely find a matching executable:
 
 ```bash
-$ nodever
-nodever: command not found
+$ hello
+command not found: hello
 ```
 
 With gnarly, we can define this command in a `.gnarly/bash.yml` file like so:
 
 ```yaml
 commands:
-  nodever: node --version
+  hello: echo "Hello, World!"
 ```
 
-Now, when the bash shell can't find a `nodever` executable, it calls the gnarly
+Now, when the bash shell can't find a `hello` executable, it calls the gnarly
 hook (a function named `command_not_found_handle()`), which finds this command
 in the `bash.yml` file and executes the corresponding command:
 
 ```bash
-$ nodever
-v18.16.0
+$ hello
+Hello, World!
 ```
 
 In this case, the gnarly alias didn't save much typing at the command line, but
@@ -39,26 +39,34 @@ it is possible to alias more complex bash scripts as well:
 
 ```yaml
 commands:
-  nodever: node --version
-  npminfo: |
-    echo "version: $(npm --version)"
-    echo "configuration:"
-    npm config list
+  hello: echo "Hello, World!"
+  sysinfo:
+    script: |
+      echo "=== System Information ==="
+      uname -a
+      echo -e "\n=== CPU Info ==="
+      lscpu | grep -E "^(Model name|Architecture|CPU\(s\))"
+      echo -e "\n=== Memory Info ==="
+      free -h
+      echo -e "\n=== Disk Usage ==="
+      df -h
+      echo -e "\n=== Distribution Info ==="
+      cat /etc/os-release | grep -E "^(NAME|VERSION)="
 ```
 
-Now this set of commands can be executed with a simple command:
+Now the named script 'sysinfo' can be executed with a simple command:
 
 ```bash
-$ npminfo
-version: 9.5.1
-configuration:
-; node bin location = /home/s3pedx/.nvm/versions/node/v18.16.0/bin/node
-; node version = v18.16.0
-; npm local prefix = /home/s3pedx/dev/sandbox/gnarly/test/.gnarly
-; npm version = 9.5.1
-; cwd = /home/s3pedx/dev/sandbox/gnarly/test/.gnarly
-; HOME = /home/s3pedx
-; Run `npm config ls -l` to show all defaults.
+$ sysinfo
+=== System Information ===
+Linux VENGEANCE 5.15.167.4-microsoft-standard-WSL2 #1 SMP Tue Nov 5 00:21:55 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+
+=== CPU Info ===
+Architecture:                         x86_64
+CPU(s):                               32
+Model name:                           Intel(R) Core(TM) i9-14900KF
+
+[... Etc. ...]
 ```
 
 ## Config File Search Path
@@ -88,3 +96,13 @@ regardless of which directory you are in.
 As a result, `gnarly` is very useful as a way of managing several commands or
 small scripts that are frequently used in a project. The `gnarly` config file
 can be checked into version control and shared with other team members as well.
+
+## Roadmap
+
+Features planned for the future include:
+
+- Search for multiple gnarly config files in the cwd hierarchy, with override
+  capability
+- Gnarly CLI features:
+  - `gnarly exec [cmd]`
+  - `gnarly add [name] [command|script] ...`
