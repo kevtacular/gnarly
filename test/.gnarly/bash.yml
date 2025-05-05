@@ -1,11 +1,15 @@
 commands:
-  start: npm run start
-  nodever: node --version
-  npminfo: |
-    echo "version: $(npm --version)"
-    echo "configuration:"
-    npm config list
-  lsdir:
-    args:
-    - G_DIR # the directory to list
-    script: ls $G_DIR
+  hello: echo "Hello, World!"
+  kerninfo: uname -r
+  sysinfo:
+    script: |
+      echo "=== System Information ==="
+      uname -a
+      echo -e "\n=== CPU Info ==="
+      lscpu | grep -E "^(Model name|Architecture|CPU\(s\))"
+      echo -e "\n=== Memory Info ==="
+      free -h
+      echo -e "\n=== Disk Usage ==="
+      df -h
+      echo -e "\n=== Distribution Info ==="
+      cat /etc/os-release | grep -E "^(NAME|VERSION)="

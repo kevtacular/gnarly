@@ -1,0 +1,2 @@
+commands:
+  meminfo: free -h
