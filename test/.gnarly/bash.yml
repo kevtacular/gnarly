@@ -1,5 +1,5 @@
 commands:
-  hello: echo "Hello, World!"
+  hello: echo "Hello, Gnarly!"
   kerninfo: uname -r
   sysinfo:
     script: |

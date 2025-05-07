@@ -22,7 +22,7 @@ With gnarly, we can define this command in a `.gnarly/bash.yml` file like so:
 
 ```yaml
 commands:
-  hello: echo "Hello, World!"
+  hello: echo "Hello, Gnarly!"
 ```
 
 Now, when the bash shell can't find a `hello` executable, it calls the gnarly
@@ -31,7 +31,7 @@ in the `bash.yml` file and executes the corresponding command:
 
 ```bash
 $ hello
-Hello, World!
+Hello, Gnarly!
 ```
 
 In this case, the gnarly alias didn't save much typing at the command line, but
@@ -39,7 +39,7 @@ it is possible to alias more complex bash scripts as well:
 
 ```yaml
 commands:
-  hello: echo "Hello, World!"
+  hello: echo "Hello, Gnarly!"
   sysinfo:
     script: |
       echo "=== System Information ==="
@@ -96,6 +96,24 @@ regardless of which directory you are in.
 As a result, `gnarly` is very useful as a way of managing several commands or
 small scripts that are frequently used in a project. The `gnarly` config file
 can be checked into version control and shared with other team members as well.
+
+## Initialize a Directory for Use With Gnarly
+
+To initialize the current working directory with a `./gnarly/bash.yml` file,
+issue the following command:
+
+```bash
+$ gnarly init
+Creating .gnarly directory
+Creating .gnarly/bash.yml
+```
+
+This will create the `.gnarly` directory with a `bash.yml` file that is
+initialized with a single `hello` command that you can use to quickly test
+(and then replace with your own commands).
+
+The created `bash.yml` file includes a helpful comment at the top that shows
+the supported command definition formats.
 
 ## Roadmap
 

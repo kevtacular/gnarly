@@ -32,9 +32,27 @@ test_gnarly_level3() {
     popd > /dev/null
 }
 
+test_gnarly_init() {
+    testdir="_testdir"
+    mkdir $testdir
+    pushd $testdir > /dev/null
+    result=$(gnarly init)
+
+    assertTrue ".gnarly/ directory not created" "[ -d .gnarly ]"
+    assertTrue "bash.yml file not created" "[ -f .gnarly/bash.yml ]"
+
+    result=$(hello)
+    assertEquals "hello command not found" "Hello, Gnarly!" "$result"
+    
+    popd > /dev/null
+    rm $testdir/.gnarly/bash.yml
+    rmdir $testdir/.gnarly
+    rmdir $testdir
+}
+
 test_gnarly_show_simple() {
     result=$(gnarly show hello)
-    assertEquals 'echo "Hello, World!"' "$result"
+    assertEquals 'echo "Hello, Gnarly!"' "$result"
 }
 
 test_gnarly_show_script() {

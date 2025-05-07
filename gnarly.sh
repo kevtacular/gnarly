@@ -107,6 +107,43 @@ _gnarly_verbose() {
   done
 }
 
+_gnarly_init() {
+  if [ -d ".gnarly" ]; then
+    echo "Directory .gnarly already exists"
+  else
+    echo "Creating .gnarly directory"
+    mkdir -p .gnarly
+  fi
+  if [ -f ".gnarly/bash.yml" ]; then
+    echo "File .gnarly/bash.yml already exists"
+  else
+    echo "Creating .gnarly/bash.yml"
+    cat << EOF > .gnarly/bash.yml
+# =============================================================================
+# List your gnarly commands in one of the following formats:
+#
+# 1. Simple command
+# 
+#    commands:
+#      hello: echo "Hello, Gnarly!"
+#
+# 2. Command with script and optional arguments
+#
+#    commands:
+#      showfs:
+#        args:
+#          - G_FILE
+#        script: |
+#          echo "=== File System Info ==="
+#          df -h --output $G_FILE
+#
+# =============================================================================
+commands:
+  hello: echo "Hello, Gnarly!"
+EOF
+  fi
+}
+
 _gnarly_show() {
   local cmd=$(yq .commands.$1 $gnarly_cfg_file)
   if [ "$cmd" = "null" ]; then
@@ -122,6 +159,8 @@ gnarly () {
   if [ "$gnarly_cfg_file" != "" ]; then
     if [ "$1" = "-v" ]; then
       _gnarly_verbose
+    elif [ "$1" = "init" ]; then
+      _gnarly_init
     elif [ "$1" = "show" ]; then
       if [ $# -lt 2 ]; then
         echo "Usage: gnarly show <command>"
