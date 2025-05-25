@@ -1,124 +1,180 @@
 #!/bin/bash
 
-_GNARLY_DEBUG=0
+GNARLY_DEBUG=${GNARLY_DEBUG:-0}
 
+# Constants
+readonly GNARLY_CONFIG_DIR=".gnarly"
+readonly GNARLY_CONFIG_FILE="bash.yml"
+
+# Error codes
+readonly E_SUCCESS=0
+readonly E_COMMAND_NOT_FOUND=127
+readonly E_INVALID_ARGS=1
+readonly E_CONFIG_NOT_FOUND=2
+readonly E_YQ_NOT_FOUND=3
+
+# Debug logging
 _gdebug() {
-  if [ $_GNARLY_DEBUG != 0 ]; then
-    echo "$@"
-  fi
-}
-
-_gnarly_check_yq() {
-  if [ ! -x "$(command -v yq)" ]; then
-    echo "command not found: $1"
-    echo "WARN: ensure yq is in the PATH to use gnarly commands"
-    return 1
-  fi
-  return 0
-}
-
-_gnarly_find_cfg_file() {
-  local dir=$(realpath "$PWD")
-  while [ true ]; do
-    if [ "$dir" = "" ]; then
-      gnarly_cfg_file=""
-      break
-    else
-      gnarly_cfg_file="$dir/.gnarly/bash.yml"
-      if [ -f "$gnarly_cfg_file" ]; then
-        break
-      fi
-      dir=${dir%/*}
+    if [ "$GNARLY_DEBUG" != 0 ]; then
+        echo "[DEBUG] $*" >&2
     fi
-  done
 }
 
-_gnarly_command() {
-  local cmd=""
+# Error logging
+_gerror() {
+    echo "[ERROR] $*" >&2
+}
 
-  _GNARLY_CMD=$1
+# Check if yq is installed and available
+_gnarly_check_yq() {
+    if ! command -v yq >/dev/null 2>&1; then
+        _gerror "yq is required but not found in PATH"
+        return $E_YQ_NOT_FOUND
+    fi
+    return $E_SUCCESS
+}
 
-  # lookup the command in bash.yml
-  _gnarly_find_cfg_file
-  if [ "$gnarly_cfg_file" != "" ]; then
-    cmd=$(yq .commands.$1.script $gnarly_cfg_file)
-    if [ "$cmd" != "" ]; then
-      # Read command args and set variables for each
-      local i=0
-      local arg=""
-      local gcommand=$1
-
-      while [ true ]; do
-        arg=$(yq .commands.$gcommand.args[$i] $gnarly_cfg_file)
-        if [ "$arg" = "null" ]; then
-          break
+# Find the nearest gnarly config file by traversing up the directory tree
+_gnarly_find_cfg_file() {
+    local dir
+    dir=$(realpath "$PWD")
+    
+    while [ -n "$dir" ]; do
+        local cfg_file="$dir/$GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE"
+        if [ -f "$cfg_file" ]; then
+            gnarly_cfg_file=$cfg_file
+            return $E_SUCCESS
         fi
+        dir=${dir%/*}
+    done
+    
+    gnarly_cfg_file=""
+    return $E_CONFIG_NOT_FOUND
+}
 
-        shift
-        if [ "$1" = "" ]; then
-          echo "Missing argument $arg for gnarly command '$gcommand'"
-          return 1
+# Validate command arguments against the config
+_gnarly_validate_args() {
+    local cmd=$1
+    shift
+    
+    # First check if the command has an args array defined
+    local has_args
+    has_args=$(yq ".commands.$cmd.args | type" "$gnarly_cfg_file")
+    if [ "$has_args" != "array" ]; then
+        return $E_SUCCESS
+    fi
+    
+    local i=0
+    local arg
+    while true; do
+        arg=$(yq ".commands.$cmd.args[$i]" "$gnarly_cfg_file")
+        [ "$arg" = "null" ] && break
+        
+        if [ $# -eq 0 ]; then
+            _gerror "Missing required argument '$arg' for command '$cmd'"
+            return $E_INVALID_ARGS
         fi
         eval "$arg=$1"
-        _gdebug "arg $arg=$1"
-
+        _gdebug "Setting argument $arg=$1"
+        shift
         ((i++))
-      done
-    else
-      # Simple command with no args
-      cmd=$(yq .commands.$1 $gnarly_cfg_file)
-    fi
-    _gdebug "command $_GNARLY_CMD resolved to: ${cmd}"
-  fi
-
-  if [ "$cmd" = "" ] || [ "$cmd" = "null" ]; then
-    # No command to execute; treat as a normal shell "command not found"
-    $@
-  else
-    # Execute the gnarly command script
-    eval "${cmd}"
-  fi
+    done
+    
+    return $E_SUCCESS
 }
 
+# Execute a gnarly command
+_gnarly_command() {
+    local cmd=""
+    local gcommand=$1
+    shift
+    
+    _gnarly_find_cfg_file || {
+        _gdebug "No gnarly configuration found"
+        # Call the system's default command not found handler if it exists
+        if [ -x "/usr/lib/command-not-found" ]; then
+            /usr/lib/command-not-found "$gcommand"
+        else
+            echo "$gcommand: command not found"
+        fi
+        _gdebug "--- end handler ---"
+
+        return $E_CONFIG_NOT_FOUND
+    }
+    
+    # Try to get script first
+    cmd=$(yq ".commands.$gcommand.script" "$gnarly_cfg_file")
+    
+    if [ "$cmd" = "null" ] || [ -z "$cmd" ]; then
+        # Fall back to simple command
+        cmd=$(yq ".commands.$gcommand" "$gnarly_cfg_file")
+    fi
+    
+    if [ "$cmd" = "null" ] || [ -z "$cmd" ]; then
+        _gerror "Command '$gcommand' not found in configuration"
+        return $E_COMMAND_NOT_FOUND
+    fi
+    
+    # Validate arguments if present
+    _gnarly_validate_args "$gcommand" "$@" || return $?
+    
+    _gdebug "Executing command: $cmd"
+    eval "$cmd"
+}
+
+# Command not found handler
 command_not_found_handle() {
-  _gdebug "--- begin handler ---"
-
-  if (( ! IN_CNFH++)); then
-    _gnarly_check_yq $1
-    if [ "$?" = 0 ]; then
-      _gnarly_command $@
+    local status
+    _gdebug "--- begin handler ---"
+    
+    # Prevent infinite recursion
+    if (( ! IN_CNFH++ )); then
+        _gnarly_check_yq || {
+            status=$E_YQ_NOT_FOUND
+            _gdebug "--- end handler ---"
+            return $status
+        }
+        _gnarly_command "$@"
+        status=$?
+        (( IN_CNFH-- ))
+        _gdebug "--- end handler ---"
+        return $status
+    else
+        _gerror "Command not found: $1"
+        (( IN_CNFH-- ))
+        status=$E_COMMAND_NOT_FOUND
+        _gdebug "--- end handler ---"
+        return $status
     fi
-    (( IN_CNFH-- ))
-  else
-    # a gnarly subcommand was not found
-    echo "command not found: $1"
-    (( IN_CNFH-- ))
-    return 127
-  fi
-
-  _gdebug "--- end handler ---"
 }
 
+# List available commands
 _gnarly_verbose() {
-  # TODO Figure out how to indicate that a multi-line command has more than the one line that is displayed
-  readarray commands < <(yq e '.commands | to_entries() | .[] | ((select(.value.script == null) | .key + ": " + (.value | split("\n") | .[0])), (select(.value.script != null) | .key + ": [script]"))' $gnarly_cfg_file)
-  printf "%s\n" "${commands[@]}" | sort | while read line; do
-    if [ "$line" != "" ]; then echo "$line"; fi
-  done
+    if [ ! -f "$gnarly_cfg_file" ]; then
+        _gerror "No gnarly configuration found"
+        return $E_CONFIG_NOT_FOUND
+    fi
+    
+    yq e '.commands | to_entries() | .[] | ((select(.value.script == null) | .key + ": " + (.value | split("\n") | .[0])), (select(.value.script != null) | .key + ": [script]"))' "$gnarly_cfg_file" | sort
 }
 
+# Initialize a new gnarly configuration
 _gnarly_init() {
-  if [ -d ".gnarly" ]; then
-    echo "Directory .gnarly already exists"
-  else
-    echo "Creating .gnarly directory"
-    mkdir -p .gnarly
-  fi
-  if [ -f ".gnarly/bash.yml" ]; then
-    echo "File .gnarly/bash.yml already exists"
-  else
-    echo "Creating .gnarly/bash.yml"
-    cat << EOF > .gnarly/bash.yml
+    if [ -d "$GNARLY_CONFIG_DIR" ]; then
+        _gerror "Directory $GNARLY_CONFIG_DIR already exists"
+        return $E_INVALID_ARGS
+    fi
+    
+    echo "Creating $GNARLY_CONFIG_DIR directory"
+    mkdir -p "$GNARLY_CONFIG_DIR"
+    
+    if [ -f "$GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE" ]; then
+        _gerror "File $GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE already exists"
+        return $E_INVALID_ARGS
+    fi
+    
+    echo "Creating $GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE"
+    cat << EOF > "$GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE"
 # =============================================================================
 # List your gnarly commands in one of the following formats:
 #
@@ -135,46 +191,62 @@ _gnarly_init() {
 #          - G_FILE
 #        script: |
 #          echo "=== File System Info ==="
-#          df -h --output $G_FILE
+#          df -h --output \$G_FILE
 #
 # =============================================================================
 commands:
   hello: echo "Hello, Gnarly!"
 EOF
-  fi
 }
 
+# Show command definition
 _gnarly_show() {
-  local cmd=$(yq .commands.$1 $gnarly_cfg_file)
-  if [ "$cmd" = "null" ]; then
-    echo "Command not found: $1"
-    return 1
-  fi
-  echo "$cmd"
+    local cmd=$1
+    local cmd_def
+    
+    if [ ! -f "$gnarly_cfg_file" ]; then
+        _gerror "No gnarly configuration found"
+        return $E_CONFIG_NOT_FOUND
+    fi
+    
+    cmd_def=$(yq ".commands.$cmd" "$gnarly_cfg_file")
+    if [ "$cmd_def" = "null" ]; then
+        _gerror "Command not found: $cmd"
+        return $E_COMMAND_NOT_FOUND
+    fi
+    
+    echo "$cmd_def"
 }
 
-gnarly () {
-  _gnarly_find_cfg_file
-  _gdebug "gnarly_cfg_file = $gnarly_cfg_file"
-  if [ "$gnarly_cfg_file" != "" ]; then
-    if [ "$1" = "-v" ]; then
-      _gnarly_verbose
-    elif [ "$1" = "init" ]; then
-      _gnarly_init
-    elif [ "$1" = "show" ]; then
-      if [ $# -lt 2 ]; then
-        echo "Usage: gnarly show <command>"
-        return 1
-      fi
-      _gnarly_show $2
-    elif [ $# -gt 0 ]; then
-      echo "Usage: gnarly [-v | show <command>]"
-      return 1
-    else
-      yq '.commands.* | key' $gnarly_cfg_file
-    fi
-  else
-    echo "No gnarly commands found"
-    return 127
-  fi
+# Main gnarly command
+gnarly() {
+    _gnarly_find_cfg_file
+    
+    case "$1" in
+        -v)
+            _gnarly_verbose
+            ;;
+        init)
+            _gnarly_init
+            ;;
+        show)
+            if [ $# -lt 2 ]; then
+                _gerror "Usage: gnarly show <command>"
+                return $E_INVALID_ARGS
+            fi
+            _gnarly_show "$2"
+            ;;
+        "")
+            if [ -f "$gnarly_cfg_file" ]; then
+                yq '.commands.* | key' "$gnarly_cfg_file"
+            else
+                _gerror "No gnarly commands found"
+                return $E_CONFIG_NOT_FOUND
+            fi
+            ;;
+        *)
+            _gerror "Usage: gnarly [-v | show <command>]"
+            return $E_INVALID_ARGS
+            ;;
+    esac
 }
