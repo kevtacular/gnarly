@@ -1,6 +1,0 @@
-commands:
-  diskinfo: df -h
-  distroinfo: |
-    cat /etc/os-release | grep -E "^(NAME|VERSION)="
-  kerninfo: uname -r
-  meminfo: free -h

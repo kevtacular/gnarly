@@ -1,17 +1,38 @@
 #!/bin/bash
 
-GNARLY_DEBUG=${GNARLY_DEBUG:-0}
+# Only set constants if they haven't been set already
+if [ -z "${GNARLY_DEBUG+x}" ]; then
+    GNARLY_DEBUG=${GNARLY_DEBUG:-0}
+fi
 
-# Constants
-readonly GNARLY_CONFIG_DIR=".gnarly"
-readonly GNARLY_CONFIG_FILE="bash.yml"
+if [ -z "${GNARLY_CONFIG_DIR+x}" ]; then
+    readonly GNARLY_CONFIG_DIR=".gnarly"
+fi
+
+if [ -z "${GNARLY_CONFIG_FILE+x}" ]; then
+    readonly GNARLY_CONFIG_FILE="bash.yml"
+fi
 
 # Error codes
-readonly E_SUCCESS=0
-readonly E_COMMAND_NOT_FOUND=127
-readonly E_INVALID_ARGS=1
-readonly E_CONFIG_NOT_FOUND=2
-readonly E_YQ_NOT_FOUND=3
+if [ -z "${E_SUCCESS+x}" ]; then
+    readonly E_SUCCESS=0
+fi
+
+if [ -z "${E_COMMAND_NOT_FOUND+x}" ]; then
+    readonly E_COMMAND_NOT_FOUND=127
+fi
+
+if [ -z "${E_INVALID_ARGS+x}" ]; then
+    readonly E_INVALID_ARGS=1
+fi
+
+if [ -z "${E_CONFIG_NOT_FOUND+x}" ]; then
+    readonly E_CONFIG_NOT_FOUND=2
+fi
+
+if [ -z "${E_YQ_NOT_FOUND+x}" ]; then
+    readonly E_YQ_NOT_FOUND=3
+fi
 
 # Debug logging
 _gdebug() {
@@ -58,9 +79,10 @@ _gnarly_validate_args() {
     shift
     
     # First check if the command has an args array defined
-    local has_args
-    has_args=$(yq ".commands.$cmd.args | type" "$gnarly_cfg_file")
-    if [ "$has_args" != "array" ]; then
+    local args_type
+    args_type=$(yq ".commands.$cmd.args | type" "$gnarly_cfg_file")
+    _gdebug "Command '$cmd' args type: $args_type"
+    if [ "$args_type" != "!!seq" ] && [ "$args_type" != "array" ]; then
         return $E_SUCCESS
     fi
     
@@ -160,13 +182,10 @@ _gnarly_verbose() {
 
 # Initialize a new gnarly configuration
 _gnarly_init() {
-    if [ -d "$GNARLY_CONFIG_DIR" ]; then
-        _gerror "Directory $GNARLY_CONFIG_DIR already exists"
-        return $E_INVALID_ARGS
+    if [ ! -d "$GNARLY_CONFIG_DIR" ]; then
+        echo "Creating $GNARLY_CONFIG_DIR directory"
+        mkdir -p "$GNARLY_CONFIG_DIR"
     fi
-    
-    echo "Creating $GNARLY_CONFIG_DIR directory"
-    mkdir -p "$GNARLY_CONFIG_DIR"
     
     if [ -f "$GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE" ]; then
         _gerror "File $GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE already exists"
