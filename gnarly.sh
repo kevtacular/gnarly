@@ -5,6 +5,10 @@ if [ -z "${GNARLY_DEBUG+x}" ]; then
     GNARLY_DEBUG=${GNARLY_DEBUG:-0}
 fi
 
+if [ -z "${GNARLY_BASE_DIR+x}" ]; then
+    readonly GNARLY_BASE_DIR="/"
+fi
+
 if [ -z "${GNARLY_CONFIG_DIR+x}" ]; then
     readonly GNARLY_CONFIG_DIR=".gnarly"
 fi
@@ -60,7 +64,7 @@ _gnarly_find_cfg_file() {
     local dir
     dir=$(realpath "$PWD")
     
-    while [ -n "$dir" ]; do
+    while [ -n "$dir" ] && [[ "$dir" == "$GNARLY_BASE_DIR"* ]]; do
         local cfg_file="$dir/$GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE"
         if [ -f "$cfg_file" ]; then
             gnarly_cfg_file=$cfg_file
@@ -113,14 +117,7 @@ _gnarly_command() {
     
     _gnarly_find_cfg_file || {
         _gdebug "No gnarly configuration found"
-        # Call the system's default command not found handler if it exists
-        if [ -x "/usr/lib/command-not-found" ]; then
-            /usr/lib/command-not-found "$gcommand"
-        else
-            echo "$gcommand: command not found"
-        fi
         _gdebug "--- end handler ---"
-
         return $E_CONFIG_NOT_FOUND
     }
     
@@ -133,7 +130,6 @@ _gnarly_command() {
     fi
     
     if [ "$cmd" = "null" ] || [ -z "$cmd" ]; then
-        _gerror "Command '$gcommand' not found in configuration"
         return $E_COMMAND_NOT_FOUND
     fi
     
@@ -144,7 +140,16 @@ _gnarly_command() {
     eval "$cmd"
 }
 
-# Command not found handler
+# How gnarly handles commands that are not found in its configuration
+command_not_found_fallback() {
+    if [ -x "/usr/lib/command-not-found" ]; then
+        /usr/lib/command-not-found "$@"
+    else
+        echo "$1: command not found"
+    fi
+}
+
+# Command not found handler - this is gnarly's main entry point for handling commands that are not found by bash
 command_not_found_handle() {
     local status
     _gdebug "--- begin handler ---"
@@ -158,11 +163,13 @@ command_not_found_handle() {
         }
         _gnarly_command "$@"
         status=$?
+        if [ "$status" -eq "$E_CONFIG_NOT_FOUND" ] || [ "$status" -eq "$E_COMMAND_NOT_FOUND" ]; then
+            command_not_found_fallback "$@"
+        fi
         (( IN_CNFH-- ))
         _gdebug "--- end handler ---"
         return $status
     else
-        _gerror "Command not found: $1"
         (( IN_CNFH-- ))
         status=$E_COMMAND_NOT_FOUND
         _gdebug "--- end handler ---"
