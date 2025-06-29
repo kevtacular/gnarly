@@ -26,7 +26,7 @@ EOF
 test_gnarly_show_nonexistent() {
     # Nonexistent gnarly config directory
     result=$(gnarly show nonexistent 2>&1)
-    assertContains "Should handle nonexistent command" "$result" "No gnarly configuration found"
+    assertContains "Should handle nonexistent gnarly config directory" "$result" "No gnarly configuration found"
 
     # Existing gnarly config directory but nonexistent command
     gnarly init > /dev/null
