@@ -10,7 +10,6 @@ test_gnarly_simple_command() {
 }
 
 test_gnarly_script_command() {
-    gnarly init > /dev/null
     cat > $GNARLY_CONFIG_DIR/bash.yml << EOF
 commands:
   testscript:
