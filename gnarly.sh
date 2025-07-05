@@ -96,6 +96,11 @@ _gnarly_validate_args() {
         arg=$(yq ".commands.$cmd.args[$i]" "$gnarly_cfg_file")
         [ "$arg" = "null" ] && break
         
+        if ! [[ "$arg" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+            _gerror "Invalid argument name '$arg' for command '$cmd'"
+            return $E_INVALID_ARGS
+        fi
+        
         if [ $# -eq 0 ]; then
             _gerror "Missing required argument '$arg' for command '$cmd'"
             return $E_INVALID_ARGS

@@ -13,6 +13,17 @@ commands:
 EOF
 }
 
+create_gnarly_invalid_args_file() {
+    cat > $GNARLY_CONFIG_DIR/bash.yml << EOF
+commands:
+  greet_invalid:
+    args:
+      - G_NAME-invalid
+    script: |
+      echo "Hello, \$G_NAME-invalid!"
+EOF
+}
+
 test_gnarly_command_with_args() {
     create_gnarly_args_file
     result=$(greet "World")
@@ -25,6 +36,12 @@ test_gnarly_missing_args() {
 
     result=$(greet 2>&1)
     assertContains "Should error on missing arguments" "$result" "Missing required argument"
+}
+
+test_gnarly_invalid_arg_name() {
+    create_gnarly_invalid_args_file
+    result=$(greet_invalid "World" 2>&1)
+    assertContains "Should error on invalid argument name" "$result" "Invalid argument name"
 }
 
 # Load and run the tests
