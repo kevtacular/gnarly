@@ -5,7 +5,7 @@ source common.sh
 create_gnarly_file_root() {
     cat > .gnarly.yml << EOF
 commands:
-  hello: echo "Hello, Gnarly!"
+  gecho: echo "gecko"
   kerninfo:
     script: |
       echo "Kernel Info"
@@ -57,14 +57,14 @@ EOF
 # Basic functionality tests
 test_gnarly_list_commands() {
     create_gnarly_file_root
-    expected=$'hello\nkerninfo\nsysinfo'
+    expected=$'gecho\nkerninfo\nsysinfo'
     result=$(gnarly)
     assertEquals "Should list all available commands" "$expected" "$result"
 }
 
 test_gnarly_verbose_list() {
     create_gnarly_file_root
-    expected=$'hello: echo "Hello, Gnarly!"\nkerninfo: [script]\nsysinfo: [script]'
+    expected=$'gecho: echo "gecko"\nkerninfo: [script]\nsysinfo: [script]'
     result=$(gnarly -v)
     assertEquals "Should list commands with descriptions" "$expected" "$result"
 }
@@ -106,14 +106,14 @@ test_gnarly_level3() {
 test_gnarly_invalid_yaml() {
     gnarly init > /dev/null
     echo "invalid: yaml: content" > .gnarly.yml
-    result=$(hello 2>&1)
+    result=$(gecho 2>&1)
     assertContains "Should handle invalid YAML" "$result" "Error: bad file"
 }
 
 # Debug mode tests
 test_gnarly_debug_mode() {
     GNARLY_DEBUG=1 gnarly init > /dev/null
-    result=$(GNARLY_DEBUG=1 hello 2>&1)
+    result=$(GNARLY_DEBUG=1 gecho 2>&1)
     assertContains "Should echo debug messages" "$result" "DEBUG"
 }
 

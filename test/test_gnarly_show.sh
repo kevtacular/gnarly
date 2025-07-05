@@ -5,8 +5,8 @@ source common.sh
 # Show command tests
 test_gnarly_show_simple() {
     gnarly init > /dev/null
-    result=$(gnarly show hello)
-    assertEquals "Should show simple command" 'echo "Hello, Gnarly!"' "$result"
+    result=$(gnarly show gecho)
+    assertEquals "Should show simple command" 'echo "gecko"' "$result"
 }
 
 test_gnarly_show_script() {

@@ -203,7 +203,7 @@ _gnarly_init() {
 # 1. Simple command
 # 
 #    commands:
-#      hello: echo "Hello, Gnarly!"
+#      gecho: echo "gecko"
 #
 # 2. Command with script and optional arguments
 #
@@ -217,7 +217,7 @@ _gnarly_init() {
 #
 # =============================================================================
 commands:
-  hello: echo "Hello, Gnarly!"
+  gecho: echo "gecko"
 EOF
 }
 

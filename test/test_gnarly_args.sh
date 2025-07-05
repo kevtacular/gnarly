@@ -31,9 +31,7 @@ test_gnarly_command_with_args() {
 }
 
 test_gnarly_missing_args() {
-    gnarly init > /dev/null
     create_gnarly_args_file
-
     result=$(greet 2>&1)
     assertContains "Should error on missing arguments" "$result" "Missing required argument"
 }

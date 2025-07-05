@@ -5,8 +5,8 @@ source common.sh
 # Command execution tests
 test_gnarly_simple_command() {
     gnarly init > /dev/null
-    result=$(hello)
-    assertEquals "Should execute simple command" "Hello, Gnarly!" "$result"
+    result=$(gecho)
+    assertEquals "Should execute simple command" "gecko" "$result"
 }
 
 test_gnarly_script_command() {

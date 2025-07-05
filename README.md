@@ -14,24 +14,24 @@ not found. For example, if you try to execute this command in your bash shell,
 the shell will not likely find a matching executable:
 
 ```bash
-$ hello
-command not found: hello
+$ gecho
+command not found: gecho
 ```
 
 With gnarly, we can define this command in a `.gnarly.yml` file like so:
 
 ```yaml
 commands:
-  hello: echo "Hello, Gnarly!"
+  gecho: echo "gecko"
 ```
 
-Now, when the bash shell can't find a `hello` executable, it calls the gnarly
+Now, when the bash shell can't find a `gecho` executable, it calls the gnarly
 hook (a function named `command_not_found_handle()`), which finds this command
 in the `.gnarly.yml` file and executes the corresponding command:
 
 ```bash
-$ hello
-Hello, Gnarly!
+$ gecho
+gecko
 ```
 
 In this case, the gnarly alias didn't save much typing at the command line, but
@@ -39,7 +39,7 @@ it is possible to alias more complex bash scripts as well:
 
 ```yaml
 commands:
-  hello: echo "Hello, Gnarly!"
+  gecho: echo "gecko"
   sysinfo:
     script: |
       echo "=== System Information ==="
@@ -108,7 +108,7 @@ Creating .gnarly.yml
 ```
 
 This will create the `.gnarly.yml` file that is initialized with a single
-`hello` command that you can use to quickly test (and then replace with your
+`gecho` command that you can use to quickly test (and then replace with your
 own commands).
 
 The created `.gnarly.yml` file includes a helpful comment at the top that shows
