@@ -1,8 +1,8 @@
 # Shared by all tests
 
 # TEST_DIR=$(mktemp -d --tmpdir=/tmp gnarly-XXXX)
-TEST_DIR=testdir
-GNARLY_BASE_DIR=$(realpath "$TEST_DIR")
+readonly TEST_DIR=testdir
+readonly GNARLY_BASE_DIR=$(realpath "$TEST_DIR")
 
 script_dir=$(dirname "$(realpath "$0")")
 
@@ -36,7 +36,7 @@ setUp() {
     source "$(dirname "$0")/../gnarly.sh"
 
     # Create a temporary test directory
-    mkdir -p "$TEST_DIR/$GNARLY_CONFIG_DIR"
+    mkdir -p "$TEST_DIR"
     cd "$TEST_DIR" || exit 1
 }
 

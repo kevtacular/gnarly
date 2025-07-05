@@ -5,8 +5,7 @@ source common.sh
 # Initialization tests
 test_gnarly_init() {
     result=$(gnarly init)
-    assertTrue "Should create gnarly config directory" "[ -d $GNARLY_CONFIG_DIR ]"
-    assertTrue "Should create bash.yml file" "[ -f $GNARLY_CONFIG_DIR/bash.yml ]"
+    assertTrue "Should create .gnarly.yml file" "[ -f .gnarly.yml ]"
     assertContains "Should echo what it's doing" "$result" "Creating"
 }
 

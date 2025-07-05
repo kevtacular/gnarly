@@ -11,7 +11,7 @@ test_gnarly_show_simple() {
 
 test_gnarly_show_script() {
     gnarly init > /dev/null
-    cat > $GNARLY_CONFIG_DIR/bash.yml << EOF
+    cat > .gnarly.yml << EOF
 commands:
   testscript:
     script: |

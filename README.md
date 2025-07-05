@@ -18,7 +18,7 @@ $ hello
 command not found: hello
 ```
 
-With gnarly, we can define this command in a `.gnarly/bash.yml` file like so:
+With gnarly, we can define this command in a `.gnarly.yml` file like so:
 
 ```yaml
 commands:
@@ -27,7 +27,7 @@ commands:
 
 Now, when the bash shell can't find a `hello` executable, it calls the gnarly
 hook (a function named `command_not_found_handle()`), which finds this command
-in the `bash.yml` file and executes the corresponding command:
+in the `.gnarly.yml` file and executes the corresponding command:
 
 ```bash
 $ hello
@@ -72,23 +72,23 @@ Model name:                           Intel(R) Core(TM) i9-14900KF
 ## Config File Search Path
 
 As described in the Overview, the commands exutable by `gnarly` are defined in
-a `bash.yml` file located in a directory named `.gnarly`.
+a `.gnarly.yml` file.
 
-`gnarly` first looks for this `.gnarly` directory in the current working
-directory. If it exists and contains a file named `bash.yml`, then the command
-to be executed is looked up in this file. Otherwise, `gnarly` iterates through
-all parent directories of the current working directory looking for a
-`.gnarly/bash.yml` file until one is found. If no file is found, then a
-"command not found" error message is echoed, and `gnarly` exits.
+`gnarly` first looks for this `.gnarly.yml` file in the current working
+directory. If it exists, then the command to be executed is looked up in this
+file. Otherwise, `gnarly` iterates through all parent directories of the
+current working directory looking for a `.gnarly.yml` file until one is found.
+If no file is found, then a "command not found" error message is echoed, and
+`gnarly` exits.
 
 For example, say you have created a `gnarly` config file at this location:
 
-`/projects/myproj/.gnarly/bash.yml`
+`/projects/myproj/.gnarly.yml`
 
 In that case, you can execute `gnarly` commands from this config file in any
 child directory of `/projects/myproj`, such as `/projects/myproj/src/app/profile`.
 
-In this way, the commands configured in your `.gnarly/bash.yml` file can be
+In this way, the commands configured in your `.gnarly.yml` file can be
 tailored to this particular project and activated only when you are in this
 directory or any subdirectory. Contrast this with bash aliases, which apply
 regardless of which directory you are in.
@@ -99,20 +99,19 @@ can be checked into version control and shared with other team members as well.
 
 ## Initialize a Directory for Use With Gnarly
 
-To initialize the current working directory with a `./gnarly/bash.yml` file,
+To initialize the current working directory with a `.gnarly.yml` file,
 issue the following command:
 
 ```bash
 $ gnarly init
-Creating .gnarly directory
-Creating .gnarly/bash.yml
+Creating .gnarly.yml
 ```
 
-This will create the `.gnarly` directory with a `bash.yml` file that is
-initialized with a single `hello` command that you can use to quickly test
-(and then replace with your own commands).
+This will create the `.gnarly.yml` file that is initialized with a single
+`hello` command that you can use to quickly test (and then replace with your
+own commands).
 
-The created `bash.yml` file includes a helpful comment at the top that shows
+The created `.gnarly.yml` file includes a helpful comment at the top that shows
 the supported command definition formats.
 
 ## Roadmap

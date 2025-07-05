@@ -3,7 +3,7 @@
 source common.sh
 
 create_gnarly_file_root() {
-    cat > "$GNARLY_CONFIG_DIR/bash.yml" << EOF
+    cat > .gnarly.yml << EOF
 commands:
   hello: echo "Hello, Gnarly!"
   kerninfo:
@@ -27,24 +27,24 @@ EOF
 }
 
 create_gnarly_file_level1() {
-    mkdir -p level1/$GNARLY_CONFIG_DIR
-    cat > level1/$GNARLY_CONFIG_DIR/bash.yml << EOF
+    mkdir -p level1
+    cat > level1/.gnarly.yml << EOF
 commands:
   cpuinfo: echo "CPU Info"
 EOF
 }
 
 create_gnarly_file_level2() {
-    mkdir -p level1/level2/$GNARLY_CONFIG_DIR
-    cat > level1/level2/$GNARLY_CONFIG_DIR/bash.yml << EOF
+    mkdir -p level1/level2
+    cat > level1/level2/.gnarly.yml << EOF
 commands:
   meminfo: echo "Memory Info"
 EOF
 }
 
 create_gnarly_file_level3() {
-    mkdir -p level1/level2/level3/$GNARLY_CONFIG_DIR
-    cat > level1/level2/level3/$GNARLY_CONFIG_DIR/bash.yml << EOF
+    mkdir -p level1/level2/level3
+    cat > level1/level2/level3/.gnarly.yml << EOF
 commands:
   diskinfo: df -h
   distroinfo: |
@@ -105,7 +105,7 @@ test_gnarly_level3() {
 
 test_gnarly_invalid_yaml() {
     gnarly init > /dev/null
-    echo "invalid: yaml: content" > $GNARLY_CONFIG_DIR/bash.yml
+    echo "invalid: yaml: content" > .gnarly.yml
     result=$(hello 2>&1)
     assertContains "Should handle invalid YAML" "$result" "Error: bad file"
 }

@@ -9,12 +9,8 @@ if [ -z "${GNARLY_BASE_DIR+x}" ]; then
     readonly GNARLY_BASE_DIR="/"
 fi
 
-if [ -z "${GNARLY_CONFIG_DIR+x}" ]; then
-    readonly GNARLY_CONFIG_DIR=".gnarly"
-fi
-
 if [ -z "${GNARLY_CONFIG_FILE+x}" ]; then
-    readonly GNARLY_CONFIG_FILE="bash.yml"
+    readonly GNARLY_CONFIG_FILE=".gnarly.yml"
 fi
 
 # Error codes
@@ -65,7 +61,7 @@ _gnarly_find_cfg_file() {
     dir=$(realpath "$PWD")
     
     while [ -n "$dir" ] && [[ "$dir" == "$GNARLY_BASE_DIR"* ]]; do
-        local cfg_file="$dir/$GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE"
+        local cfg_file="$dir/$GNARLY_CONFIG_FILE"
         if [ -f "$cfg_file" ]; then
             gnarly_cfg_file=$cfg_file
             return $E_SUCCESS
@@ -194,18 +190,13 @@ _gnarly_verbose() {
 
 # Initialize a new gnarly configuration
 _gnarly_init() {
-    if [ ! -d "$GNARLY_CONFIG_DIR" ]; then
-        echo "Creating $GNARLY_CONFIG_DIR directory"
-        mkdir -p "$GNARLY_CONFIG_DIR"
-    fi
-    
-    if [ -f "$GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE" ]; then
-        _gerror "File $GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE already exists"
+    if [ -f "$GNARLY_CONFIG_FILE" ]; then
+        _gerror "File $GNARLY_CONFIG_FILE already exists"
         return $E_INVALID_ARGS
     fi
     
-    echo "Creating $GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE"
-    cat << EOF > "$GNARLY_CONFIG_DIR/$GNARLY_CONFIG_FILE"
+    echo "Creating $GNARLY_CONFIG_FILE"
+    cat << EOF > "$GNARLY_CONFIG_FILE"
 # =============================================================================
 # List your gnarly commands in one of the following formats:
 #

@@ -3,7 +3,7 @@
 source common.sh
 
 create_gnarly_args_file() {
-    cat > $GNARLY_CONFIG_DIR/bash.yml << EOF
+    cat > .gnarly.yml << EOF
 commands:
   greet:
     args:
@@ -14,7 +14,7 @@ EOF
 }
 
 create_gnarly_invalid_args_file() {
-    cat > $GNARLY_CONFIG_DIR/bash.yml << EOF
+    cat > .gnarly.yml << EOF
 commands:
   greet_invalid:
     args:
