@@ -65,8 +65,16 @@ test_gnarly_list_commands() {
 test_gnarly_verbose_list() {
     create_gnarly_file_root
     expected=$'gecho: echo "gecko"\nkerninfo: [script]\nsysinfo: [script]'
-    result=$(gnarly -v)
+    result=$(gnarly --verbose)
     assertEquals "Should list commands with descriptions" "$expected" "$result"
+}
+
+test_gnarly_help_message() {
+    result=$(gnarly --help)
+    assertContains "Should display help message" "$result" "Usage: gnarly [OPTION] [COMMAND]"
+    assertContains "Should display help message" "$result" "-v, --verbose   List all available commands with descriptions"
+    assertContains "Should display help message" "$result" "--version       Show gnarly version"
+    assertContains "Should display help message" "$result" "--help          Display this help message"
 }
 
 # Directory hierarchy tests

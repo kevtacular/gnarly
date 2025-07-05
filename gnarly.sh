@@ -240,12 +240,46 @@ _gnarly_show() {
     echo "$cmd_def"
 }
 
+# Display help message
+_gnarly_help() {
+    cat << EOF
+Usage: gnarly [OPTION] [COMMAND]
+
+Gnarly is a tool for managing project-specific shell aliases defined in YAML files.
+
+Options:
+  -v, --verbose   List all available commands with descriptions
+  --version       Show gnarly version
+  -h, --help      Display this help message
+
+Commands:
+  init            Initialize the current directory with a .gnarly.yml file
+  show <command>  Show the definition of a specific gnarly command
+
+If no command or option is provided, gnarly will list all available commands.
+
+Examples:
+  gnarly
+  gnarly init
+  gnarly show mycommand
+  gnarly -v
+  gnarly --version
+  gnarly -h
+  gnarly --help
+EOF
+}
+
 # Main gnarly command
 gnarly() {
     _gnarly_find_cfg_file
     
     case "$1" in
-        -v)
+        --version)
+            local version
+            version=$(cat "$(dirname "${BASH_SOURCE[0]}")/VERSION")
+            echo "gnarly version $version"
+            ;;
+        -v|--verbose)
             _gnarly_verbose
             ;;
         init)
@@ -258,6 +292,9 @@ gnarly() {
             fi
             _gnarly_show "$2"
             ;;
+        -h|--help)
+            _gnarly_help
+            ;;
         "")
             if [ -f "$gnarly_cfg_file" ]; then
                 yq '.commands.* | key' "$gnarly_cfg_file"
@@ -267,8 +304,7 @@ gnarly() {
             fi
             ;;
         *)
-            _gerror "Usage: gnarly [-v | show <command>]"
+            _gerror "Usage: gnarly [init | show <command> | --verbose | --version | --help]"
             return $E_INVALID_ARGS
-            ;;
     esac
 }
