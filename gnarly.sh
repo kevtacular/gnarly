@@ -5,6 +5,10 @@ if [ -z "${GNARLY_DEBUG+x}" ]; then
     GNARLY_DEBUG=${GNARLY_DEBUG:-0}
 fi
 
+if [ -z "${GNARLY_SCRIPT_DIR+x}" ]; then
+    GNARLY_SCRIPT_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+fi
+
 if [ -z "${GNARLY_BASE_DIR+x}" ]; then
     readonly GNARLY_BASE_DIR="/"
 fi
@@ -276,8 +280,8 @@ gnarly() {
     case "$1" in
         --version)
             local version
-            version=$(cat "$(dirname "${BASH_SOURCE[0]}")/VERSION")
-            echo "gnarly version $version"
+            version=$(cat "$GNARLY_SCRIPT_DIR/VERSION")
+            echo "gnarly version v$version"
             ;;
         -v|--verbose)
             _gnarly_verbose

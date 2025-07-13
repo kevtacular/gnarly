@@ -4,7 +4,7 @@
 readonly TEST_DIR=testdir
 readonly GNARLY_BASE_DIR=$(realpath "$TEST_DIR")
 
-script_dir=$(dirname "$(realpath "$0")")
+script_dir=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 
 # Ensure SHUNIT_HOME is set to the shunit2 directory
 if [ "$SHUNIT_HOME" = "" ]; then

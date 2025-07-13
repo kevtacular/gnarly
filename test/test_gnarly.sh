@@ -72,9 +72,16 @@ test_gnarly_verbose_list() {
 test_gnarly_help_message() {
     result=$(gnarly --help)
     assertContains "Should display help message" "$result" "Usage: gnarly [OPTION] [COMMAND]"
-    assertContains "Should display help message" "$result" "-v, --verbose   List all available commands with descriptions"
-    assertContains "Should display help message" "$result" "--version       Show gnarly version"
-    assertContains "Should display help message" "$result" "--help          Display this help message"
+    assertContains "Should display --verbose help message" "$result" "-v, --verbose   List all available commands with descriptions"
+    assertContains "Should display --version help message" "$result" "--version       Show gnarly version"
+    assertContains "Should display --help help message"    "$result" "-h, --help      Display this help message"
+}
+
+test_gnarly_version() {
+    local version
+    version=$(cat "$GNARLY_SCRIPT_DIR/VERSION")
+    result=$(gnarly --version)
+    assertEquals "Should display the correct version" "gnarly version v$version" "$result"
 }
 
 # Directory hierarchy tests
