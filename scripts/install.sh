@@ -21,6 +21,13 @@ get_latest_release() {
 
 # Install gnarly
 install_gnarly() {
+    # Check for yq dependency
+    if ! command -v yq &> /dev/null; then
+        echo "Error: yq is not on the PATH. Please install yq and add it to the PATH to continue."
+        echo "Installation instructions: https://github.com/mikefarah/yq/#install"
+        exit 1
+    fi
+
     local version
     version=$(get_latest_release)
     if [ -z "$version" ]; then
