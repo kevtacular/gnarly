@@ -123,13 +123,3 @@ own commands).
 
 The created `.gnarly.yml` file includes a helpful comment at the top that shows
 the supported command definition formats.
-
-## Roadmap
-
-Features planned for the future include:
-
-- Search for multiple gnarly config files in the cwd hierarchy, with override
-  capability
-- Gnarly CLI features:
-  - `gnarly exec [cmd]`
-  - `gnarly add [name] [command|script] ...`
