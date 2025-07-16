@@ -281,7 +281,7 @@ gnarly() {
         --version)
             local version
             version=$(cat "$GNARLY_SCRIPT_DIR/VERSION")
-            echo "gnarly version v$version"
+            echo "gnarly (https://github.com/kevtacular/gnarly) version v$version"
             ;;
         -v|--verbose)
             _gnarly_verbose

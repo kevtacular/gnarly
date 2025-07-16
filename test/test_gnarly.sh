@@ -81,7 +81,7 @@ test_gnarly_version() {
     local version
     version=$(cat "$GNARLY_SCRIPT_DIR/VERSION")
     result=$(gnarly --version)
-    assertEquals "Should display the correct version" "gnarly version v$version" "$result"
+    assertEquals "Should display the correct version" "gnarly (https://github.com/kevtacular/gnarly) version v$version" "$result"
 }
 
 # Directory hierarchy tests
