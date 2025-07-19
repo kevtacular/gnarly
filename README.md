@@ -126,9 +126,10 @@ the supported command definition formats.
 
 ## Environment Variables
 
-### Static Settings
+### Overridable Settings
 
-These environment variables are static settings that can be overridden from outside of `gnarly.sh` if desired.
+These environment variables are given default values by `gnarly.sh`, but can
+be overridden from outside of `gnarly.sh` if desired.
 
 | Name                 | Description                                                                                   | Default Value |
 | -------------------- | --------------------------------------------------------------------------------------------- | ------------- |
@@ -136,12 +137,16 @@ These environment variables are static settings that can be overridden from outs
 | `GNARLY_FILENAME`    | Name of the gnarly config file                                                                | `.gnarly.yml` |
 | `GNARLY_PATH`        | A colon (:) separated list of allowed gnarly config file search paths                         | `$HOME`       |
 
-### "Source" Settings
+### Fixed Settings
 
 These environment variables are set at the time `gnarly.sh` is sourced. Their values are determined automatically and
 are not designed to be overridden outside of `gnarly.sh`.
 
-| Name                 | Description                                                                                   | Default Value                                  |
+Note that the `$GNARLY_HOME` variable must point to the location of the sourced `gnarly.sh` file. It is therefore
+determined at the time of sourcing and is not intended to be specified outside of `gnarly.sh`. In this respect, it
+is is unlike other `*_HOME` environment variables with which you may be familiar.
+
+| Name                 | Description                                                                                   | Value                                          |
 | -------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | `GNARLY_HOME`        | Full path to the gnarly installation directory; determined at the time `gnarly.sh` is sourced | `$(dirname "$(realpath "${BASH_SOURCE[0]}")")` |
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Only set constants if they haven't been set already
+# Overridable Settings
 if [ -z "${GNARLY_DEBUG+x}" ]; then
     GNARLY_DEBUG=${GNARLY_DEBUG:-0}
 fi
@@ -13,6 +13,7 @@ if [ -z "${GNARLY_PATH+x}" ]; then
     GNARLY_PATH="$HOME"
 fi
 
+# Fixed Settings - do not override these outside of gnarly.sh
 if [ -z "${GNARLY_HOME+x}" ]; then
     readonly GNARLY_HOME=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 fi
