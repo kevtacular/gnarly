@@ -40,9 +40,10 @@ install_gnarly() {
     # Create the installation directory
     mkdir -p "$INSTALL_DIR"
 
-    # Download the script and VERSION file
+    # Download the script, VERSION and LICENSE file
     curl -fsSL "https://raw.githubusercontent.com/$GITHUB_REPO/v$version/gnarly.sh" -o "$INSTALL_DIR/gnarly.sh"
     curl -fsSL "https://raw.githubusercontent.com/$GITHUB_REPO/v$version/VERSION" -o "$INSTALL_DIR/VERSION"
+    curl -fsSL "https://raw.githubusercontent.com/$GITHUB_REPO/v$version/LICENSE" -o "$INSTALL_DIR/LICENSE"
 
     # Add sourcing to .bashrc if it's not already there
     local source_line="source \"$INSTALL_DIR/gnarly.sh\""
