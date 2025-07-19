@@ -2,7 +2,7 @@
 
 # TEST_DIR=$(mktemp -d --tmpdir=/tmp gnarly-XXXX)
 readonly TEST_DIR=testdir
-readonly GNARLY_BASE_DIR=$(realpath "$TEST_DIR")
+readonly GNARLY_PATH=$(realpath "$TEST_DIR")
 
 script_dir=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 

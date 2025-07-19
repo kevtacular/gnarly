@@ -5,16 +5,16 @@ if [ -z "${GNARLY_DEBUG+x}" ]; then
     GNARLY_DEBUG=${GNARLY_DEBUG:-0}
 fi
 
-if [ -z "${GNARLY_SCRIPT_DIR+x}" ]; then
-    GNARLY_SCRIPT_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+if [ -z "${GNARLY_FILENAME+x}" ]; then
+    readonly GNARLY_FILENAME=".gnarly.yml"
 fi
 
-if [ -z "${GNARLY_BASE_DIR+x}" ]; then
-    readonly GNARLY_BASE_DIR="/"
+if [ -z "${GNARLY_PATH+x}" ]; then
+    readonly GNARLY_PATH="$HOME"
 fi
 
-if [ -z "${GNARLY_CONFIG_FILE+x}" ]; then
-    readonly GNARLY_CONFIG_FILE=".gnarly.yml"
+if [ -z "${GNARLY_HOME+x}" ]; then
+    readonly GNARLY_HOME=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 fi
 
 # Error codes
@@ -64,8 +64,8 @@ _gnarly_find_cfg_file() {
     local dir
     dir=$(realpath "$PWD")
     
-    while [ -n "$dir" ] && [[ "$dir" == "$GNARLY_BASE_DIR"* ]]; do
-        local cfg_file="$dir/$GNARLY_CONFIG_FILE"
+    while [ -n "$dir" ] && [[ "$dir" == "$GNARLY_PATH"* ]]; do
+        local cfg_file="$dir/$GNARLY_FILENAME"
         if [ -f "$cfg_file" ]; then
             gnarly_cfg_file=$cfg_file
             return $E_SUCCESS
@@ -194,13 +194,13 @@ _gnarly_verbose() {
 
 # Initialize a new gnarly configuration
 _gnarly_init() {
-    if [ -f "$GNARLY_CONFIG_FILE" ]; then
-        _gerror "File $GNARLY_CONFIG_FILE already exists"
+    if [ -f "$GNARLY_FILENAME" ]; then
+        _gerror "File $GNARLY_FILENAME already exists"
         return $E_INVALID_ARGS
     fi
     
-    echo "Creating $GNARLY_CONFIG_FILE"
-    cat << EOF > "$GNARLY_CONFIG_FILE"
+    echo "Creating $GNARLY_FILENAME"
+    cat << EOF > "$GNARLY_FILENAME"
 # =============================================================================
 # List your gnarly commands in one of the following formats:
 #
@@ -280,7 +280,7 @@ gnarly() {
     case "$1" in
         --version)
             local version
-            version=$(cat "$GNARLY_SCRIPT_DIR/VERSION")
+            version=$(cat "$GNARLY_HOME/VERSION")
             echo "gnarly (https://github.com/kevtacular/gnarly) version v$version"
             ;;
         -v|--verbose)
