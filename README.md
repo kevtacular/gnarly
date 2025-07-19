@@ -123,3 +123,34 @@ own commands).
 
 The created `.gnarly.yml` file includes a helpful comment at the top that shows
 the supported command definition formats.
+
+## Environment Variables
+
+### Static Settings
+
+These environment variables are static settings that can be overridden from outside of `gnarly.sh` if desired.
+
+| Name                 | Description                                                                                   | Default Value |
+| -------------------- | --------------------------------------------------------------------------------------------- | ------------- |
+| `GNARLY_DEBUG`       | Enables gnarly debug logging (`0` = off; any other value = on)                                | `0`           |
+| `GNARLY_FILENAME`    | Name of the gnarly config file                                                                | `.gnarly.yml` |
+| `GNARLY_PATH`        | A colon (:) separated list of allowed gnarly config file search paths                         | `$HOME`       |
+
+### "Source" Settings
+
+These environment variables are set at the time `gnarly.sh` is sourced. Their values are determined automatically and
+are not designed to be overridden outside of `gnarly.sh`.
+
+| Name                 | Description                                                                                   | Default Value                                  |
+| -------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `GNARLY_HOME`        | Full path to the gnarly installation directory; determined at the time `gnarly.sh` is sourced | `$(dirname "$(realpath "${BASH_SOURCE[0]}")")` |
+
+### Dynamic Settings
+
+These environment variables are set when gnarly finds and activates a `.gnarly.yml` file. They can be useful to
+reference within command definitions inside of a `.gnarly.yml` file.
+
+| Name                 | Description                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `GNARLY_CFG_DIR`     | Full path to the directory that holds the in-effect gnarly config file                      |
+| `GNARLY_CFG_FILE`    | Full path to the gnarly config file in effect                                               |

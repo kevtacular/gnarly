@@ -6,11 +6,11 @@ if [ -z "${GNARLY_DEBUG+x}" ]; then
 fi
 
 if [ -z "${GNARLY_FILENAME+x}" ]; then
-    readonly GNARLY_FILENAME=".gnarly.yml"
+    GNARLY_FILENAME=".gnarly.yml"
 fi
 
 if [ -z "${GNARLY_PATH+x}" ]; then
-    readonly GNARLY_PATH="$HOME"
+    GNARLY_PATH="$HOME"
 fi
 
 if [ -z "${GNARLY_HOME+x}" ]; then
@@ -67,13 +67,16 @@ _gnarly_find_cfg_file() {
     while [ -n "$dir" ] && [[ "$dir" == "$GNARLY_PATH"* ]]; do
         local cfg_file="$dir/$GNARLY_FILENAME"
         if [ -f "$cfg_file" ]; then
-            gnarly_cfg_file=$cfg_file
+            GNARLY_CFG_DIR=$dir
+            GNARLY_CFG_FILE=$cfg_file
+            _gdebug "GNARLY_CFG_DIR=$GNARLY_CFG_DIR"
+            _gdebug "GNARLY_CFG_FILE=$GNARLY_CFG_FILE"
             return $E_SUCCESS
         fi
         dir=${dir%/*}
     done
     
-    gnarly_cfg_file=""
+    GNARLY_CFG_FILE=""
     return $E_CONFIG_NOT_FOUND
 }
 
@@ -84,7 +87,7 @@ _gnarly_validate_args() {
     
     # First check if the command has an args array defined
     local args_type
-    args_type=$(yq ".commands.$cmd.args | type" "$gnarly_cfg_file")
+    args_type=$(yq ".commands.$cmd.args | type" "$GNARLY_CFG_FILE")
     _gdebug "Command '$cmd' args type: $args_type"
     if [ "$args_type" != "!!seq" ] && [ "$args_type" != "array" ]; then
         return $E_SUCCESS
@@ -93,7 +96,7 @@ _gnarly_validate_args() {
     local i=0
     local arg
     while true; do
-        arg=$(yq ".commands.$cmd.args[$i]" "$gnarly_cfg_file")
+        arg=$(yq ".commands.$cmd.args[$i]" "$GNARLY_CFG_FILE")
         [ "$arg" = "null" ] && break
         
         if ! [[ "$arg" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
@@ -127,11 +130,11 @@ _gnarly_command() {
     }
     
     # Try to get script first
-    cmd=$(yq ".commands.$gcommand.script" "$gnarly_cfg_file")
+    cmd=$(yq ".commands.$gcommand.script" "$GNARLY_CFG_FILE")
     
     if [ "$cmd" = "null" ] || [ -z "$cmd" ]; then
         # Fall back to simple command
-        cmd=$(yq ".commands.$gcommand" "$gnarly_cfg_file")
+        cmd=$(yq ".commands.$gcommand" "$GNARLY_CFG_FILE")
     fi
     
     if [ "$cmd" = "null" ] || [ -z "$cmd" ]; then
@@ -184,12 +187,12 @@ command_not_found_handle() {
 
 # List available commands
 _gnarly_verbose() {
-    if [ ! -f "$gnarly_cfg_file" ]; then
+    if [ ! -f "$GNARLY_CFG_FILE" ]; then
         _gerror "No gnarly configuration found"
         return $E_CONFIG_NOT_FOUND
     fi
     
-    yq e '.commands | to_entries() | .[] | ((select(.value.script == null) | .key + ": " + (.value | split("\n") | .[0])), (select(.value.script != null) | .key + ": [script]"))' "$gnarly_cfg_file" | sort
+    yq e '.commands | to_entries() | .[] | ((select(.value.script == null) | .key + ": " + (.value | split("\n") | .[0])), (select(.value.script != null) | .key + ": [script]"))' "$GNARLY_CFG_FILE" | sort
 }
 
 # Initialize a new gnarly configuration
@@ -230,12 +233,12 @@ _gnarly_show() {
     local cmd=$1
     local cmd_def
     
-    if [ ! -f "$gnarly_cfg_file" ]; then
+    if [ ! -f "$GNARLY_CFG_FILE" ]; then
         _gerror "No gnarly configuration found"
         return $E_CONFIG_NOT_FOUND
     fi
     
-    cmd_def=$(yq ".commands.$cmd" "$gnarly_cfg_file")
+    cmd_def=$(yq ".commands.$cmd" "$GNARLY_CFG_FILE")
     if [ "$cmd_def" = "null" ]; then
         _gerror "Command not found: $cmd"
         return $E_COMMAND_NOT_FOUND
@@ -300,8 +303,8 @@ gnarly() {
             _gnarly_help
             ;;
         "")
-            if [ -f "$gnarly_cfg_file" ]; then
-                yq '.commands.* | key' "$gnarly_cfg_file"
+            if [ -f "$GNARLY_CFG_FILE" ]; then
+                yq '.commands.* | key' "$GNARLY_CFG_FILE"
             else
                 _gerror "No gnarly commands found"
                 return $E_CONFIG_NOT_FOUND
