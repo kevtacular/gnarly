@@ -3,13 +3,13 @@
 source common.sh
 
 # Show command tests
-test_gnarly_show_simple() {
+test_simple() {
     gnarly init > /dev/null
     result=$(gnarly show gecho)
     assertEquals "Should show simple command" 'echo "gecko"' "$result"
 }
 
-test_gnarly_show_script() {
+test_script() {
     gnarly init > /dev/null
     cat > .gnarly.yml << EOF
 commands:
@@ -23,7 +23,7 @@ EOF
     assertEquals "Should show script command" "$expected" "$result"
 }
 
-test_gnarly_show_nonexistent() {
+test_nonexistent() {
     # Nonexistent gnarly config directory
     result=$(gnarly show nonexistent 2>&1)
     assertContains "Should handle nonexistent gnarly config directory" "$result" "No gnarly configuration found"

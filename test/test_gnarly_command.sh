@@ -3,13 +3,13 @@
 source common.sh
 
 # Command execution tests
-test_gnarly_simple_command() {
+test_simple_command() {
     gnarly init > /dev/null
     result=$(gecho)
     assertEquals "Should execute simple command" "gecko" "$result"
 }
 
-test_gnarly_script_command() {
+test_script_command() {
     cat > .gnarly.yml << EOF
 commands:
   testscript:
@@ -22,7 +22,7 @@ EOF
     assertEquals "Should execute multi-line script" "$expected" "$result"
 }
 
-test_gnarly_command_not_found() {
+test_command_not_found() {
     result=$(nonexistent_command 2>&1)
     assertContains "Should handle nonexistent commands" "$result" "command not found"
 }

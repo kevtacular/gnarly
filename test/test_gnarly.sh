@@ -55,21 +55,21 @@ EOF
 }
 
 # Basic functionality tests
-test_gnarly_list_commands() {
+test_list_commands() {
     create_gnarly_file_root
     expected=$'gecho\nkerninfo\nsysinfo'
     result=$(gnarly)
     assertEquals "Should list all available commands" "$expected" "$result"
 }
 
-test_gnarly_verbose_list() {
+test_verbose_list() {
     create_gnarly_file_root
     expected=$'gecho: echo "gecko"\nkerninfo: [script]\nsysinfo: [script]'
     result=$(gnarly --verbose)
     assertEquals "Should list commands with descriptions" "$expected" "$result"
 }
 
-test_gnarly_help_message() {
+test_help_message() {
     result=$(gnarly --help)
     assertContains "Should display help message" "$result" "Usage: gnarly [OPTION] [COMMAND]"
     assertContains "Should display --verbose help message" "$result" "-v, --verbose   List all available commands with descriptions"
@@ -77,7 +77,7 @@ test_gnarly_help_message() {
     assertContains "Should display --help help message"    "$result" "-h, --help      Display this help message"
 }
 
-test_gnarly_version() {
+test_version() {
     local version
     version=$(cat "$GNARLY_HOME/VERSION")
     result=$(gnarly --version)
@@ -85,7 +85,7 @@ test_gnarly_version() {
 }
 
 # Directory hierarchy tests
-test_gnarly_level1() {
+test_level1() {
     create_gnarly_file_root
     create_gnarly_file_level1
     pushd level1 > /dev/null
@@ -95,7 +95,7 @@ test_gnarly_level1() {
     assertEquals "Should find commands in level1" "$expected" "$result"
 }
 
-test_gnarly_level2() {
+test_level2() {
     create_gnarly_file_root
     create_gnarly_file_level1
     create_gnarly_file_level2
@@ -106,7 +106,7 @@ test_gnarly_level2() {
     assertEquals "Should find commands in level2" "$expected" "$result"
 }
 
-test_gnarly_level3() {
+test_level3() {
     create_gnarly_file_root
     create_gnarly_file_level1
     create_gnarly_file_level2
@@ -118,7 +118,7 @@ test_gnarly_level3() {
     assertEquals "Should find commands in level3" "$expected" "$result"
 }
 
-test_gnarly_invalid_yaml() {
+test_invalid_yaml() {
     gnarly init > /dev/null
     echo "invalid: yaml: content" > .gnarly.yml
     result=$(gecho 2>&1)
@@ -126,7 +126,7 @@ test_gnarly_invalid_yaml() {
 }
 
 # Debug mode tests
-test_gnarly_debug_mode() {
+test_debug_mode() {
     GNARLY_DEBUG=1 gnarly init > /dev/null
     result=$(GNARLY_DEBUG=1 gecho 2>&1)
     assertContains "Should echo debug messages" "$result" "DEBUG"

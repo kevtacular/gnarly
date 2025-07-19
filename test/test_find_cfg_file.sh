@@ -2,13 +2,13 @@
 
 source common.sh
 
-test_find_cfg_file_root() {
+test_base() {
     touch ".gnarly.yml"
     _gnarly_find_cfg_file
     assertEquals "$PWD/.gnarly.yml" "$GNARLY_CFG_FILE"
 }
 
-test_find_cfg_file_level1() {
+test_level1() {
     gfile=$(realpath ".gnarly.yml")
     touch "$gfile"
     mkdir level1
@@ -21,7 +21,7 @@ test_find_cfg_file_level1() {
     rmdir level1
 }
 
-test_find_cfg_file_level2() {
+test_level2() {
     gfile=$(realpath ".gnarly.yml")
     touch "$gfile"
     mkdir -p level1/level2
@@ -34,7 +34,7 @@ test_find_cfg_file_level2() {
     rmdir -p level1/level2
 }
 
-test_find_cfg_file_level3() {
+test_level3() {
     gfile=$(realpath ".gnarly.yml")
     touch "$gfile"
     mkdir -p level1/level2/level3
