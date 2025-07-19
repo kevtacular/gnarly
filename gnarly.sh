@@ -64,8 +64,25 @@ _gnarly_check_yq() {
 _gnarly_find_cfg_file() {
     local dir
     dir=$(realpath "$PWD")
-    
-    while [ -n "$dir" ] && [[ "$dir" == "$GNARLY_PATH"* ]]; do
+
+    while [ -n "$dir" ]; do
+        local in_gnarly_path=0
+        local path
+        local paths
+        IFS=':' read -ra paths <<< "$GNARLY_PATH"
+        for path in "${paths[@]}"; do
+            # expand path using eval to allow for ~ and env vars that are not yet expanded
+            path=$(eval echo "$path")
+            if [[ "$dir" == "$path"* ]]; then
+                in_gnarly_path=1
+                break
+            fi
+        done
+
+        if [ "$in_gnarly_path" -eq 0 ]; then
+            break
+        fi
+
         local cfg_file="$dir/$GNARLY_FILENAME"
         if [ -f "$cfg_file" ]; then
             GNARLY_CFG_DIR=$dir
@@ -76,8 +93,9 @@ _gnarly_find_cfg_file() {
         fi
         dir=${dir%/*}
     done
-    
+
     GNARLY_CFG_FILE=""
+    GNARLY_CFG_DIR=""
     return $E_CONFIG_NOT_FOUND
 }
 
