@@ -2,6 +2,18 @@
 
 set -e
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$(dirname "$script_dir")" || {
+    echo "Error: Could not change to project root directory"
+    exit 1
+}
+
+# Verify we're in the right place
+if [ ! -f "VERSION" ]; then
+    echo "Error: VERSION file not found. Must run from project root."
+    exit 1
+fi
+
 # 1. Get the version from the user
 current_version=$(cat VERSION)
 read -p "Enter the new version number (current is $current_version): " version
