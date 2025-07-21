@@ -14,7 +14,17 @@ if [ ! -f "VERSION" ]; then
     exit 1
 fi
 
-# 1. Get the version from the user
+# Remind user to run tests first
+read -p "Have you run all tests and confirmed they pass? (y/n): " yn
+case $yn in
+    [Yy]* ) ;;
+    * ) echo "Aborting release. Please run tests first."; exit 1;;
+esac
+
+echo "Starting release process..."
+exit 0
+
+# Get the version from the user
 current_version=$(cat VERSION)
 read -p "Enter the new version number (current is $current_version): " version
 
@@ -23,17 +33,17 @@ if [ -z "$version" ]; then
     exit 1
 fi
 
-# 2. Update the VERSION file
+# Update the VERSION file
 echo "$version" > VERSION
 
-# 3. Commit the version change
+# Commit the version change
 git add VERSION
 git commit -m "chore(release): v$version"
 
-# 4. Create a git tag
+# Create a git tag
 git tag -a "v$version" -m "Release v$version"
 
-# 5. Push the commit and tag
+# Push the commit and tag
 git push
 git push --tags
 
