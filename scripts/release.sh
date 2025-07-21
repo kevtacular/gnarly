@@ -21,9 +21,6 @@ case $yn in
     * ) echo "Aborting release. Please run tests first."; exit 1;;
 esac
 
-echo "Starting release process..."
-exit 0
-
 # Get the version from the user
 current_version=$(cat VERSION)
 read -p "Enter the new version number (current is $current_version): " version
