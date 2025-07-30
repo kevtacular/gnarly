@@ -14,9 +14,11 @@ INSTALL_DIR="$HOME/.gnarly"
 
 # Find the latest version from GitHub releases
 get_latest_release() {
-    curl --silent "https://api.github.com/repos/$GITHUB_REPO/releases/latest" | # Get latest release from GitHub api
-    grep '"tag_name":' |                                                     # Get tag line
-    sed -E 's/.*"v*([^"]+)".*/\1/'                                         # Pluck JSON value
+    # Get all releases and extract the first (most recent) tag
+    curl --silent "https://api.github.com/repos/$GITHUB_REPO/releases" | 
+        grep '"tag_name":' |
+        head -n 1 |
+        sed -E 's/.*"v*([^"]+)".*/\1/'
 }
 
 # Install gnarly
@@ -46,10 +48,23 @@ install_gnarly() {
     curl -fsSL "https://raw.githubusercontent.com/$GITHUB_REPO/v$version/LICENSE" -o "$INSTALL_DIR/LICENSE"
 
     # Add sourcing to .bashrc if it's not already there
-    local source_line="source \"$INSTALL_DIR/gnarly.sh\""
+    local source_line="source \"\$HOME/.gnarly/gnarly.sh\""
     if ! grep -q "$source_line" "$HOME/.bashrc"; then
         echo "Adding gnarly to your .bashrc..."
-        echo -e "\n# Gnarly configuration\nexport GNARLY_HOME=$HOME\n$source_line" >> "$HOME/.bashrc"
+        cat >> "$HOME/.bashrc" << EOF
+
+# ================== Gnarly configuration ===================
+# Allowed search paths for gnarly configuration files
+# (Separate multiple paths with colons)
+export GNARLY_PATH=\$HOME
+
+# Source the gnarly script to make it available in your shell
+$source_line
+
+# Uncomment for a convenient gnarly alias
+# alias g='gnarly'
+# ===========================================================
+EOF
     fi
 
     echo "Gnarly installed successfully!"
@@ -58,7 +73,7 @@ install_gnarly() {
     echo "  source ~/.bashrc"
     echo
     echo "Be sure to set the GNARLY_PATH environment variable to include all paths"
-    echo "in which you want gnarly to search for gnarly config files."
+    echo "under which you want gnarly to search for .gnarly.yml config files."
     echo
     echo "The following setting has been added to your .bashrc, in which case gnarly"
     echo "will only find gnarly config files under your home directory:"
