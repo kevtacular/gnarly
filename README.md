@@ -1,5 +1,15 @@
 # GNARLY - A Gnarlier Alias
 
+## Installation
+
+To install gnarly, you can use the `install.sh` script.
+
+```bash
+$ curl -sSL https://raw.githubusercontent.com/kevtacular/gnarly/master/scripts/install.sh | bash
+```
+
+This will install `gnarly` to `~/.gnarly` and add a line to your `.bashrc` to source the script. You will need to open a new terminal session or run `source ~/.bashrc` for the changes to take effect.
+
 ## Overview
 
 Gnarly is similar to the aliases commonly used in shells such as bash, but the
@@ -14,24 +24,24 @@ not found. For example, if you try to execute this command in your bash shell,
 the shell will not likely find a matching executable:
 
 ```bash
-$ hello
-command not found: hello
+$ gecho
+command not found: gecho
 ```
 
-With gnarly, we can define this command in a `.gnarly/bash.yml` file like so:
+With gnarly, we can define this command in a `.gnarly.yml` file like so:
 
 ```yaml
 commands:
-  hello: echo "Hello, Gnarly!"
+  gecho: echo "gecko"
 ```
 
-Now, when the bash shell can't find a `hello` executable, it calls the gnarly
+Now, when the bash shell can't find a `gecho` executable, it calls the gnarly
 hook (a function named `command_not_found_handle()`), which finds this command
-in the `bash.yml` file and executes the corresponding command:
+in the `.gnarly.yml` file and executes the corresponding command:
 
 ```bash
-$ hello
-Hello, Gnarly!
+$ gecho
+gecko
 ```
 
 In this case, the gnarly alias didn't save much typing at the command line, but
@@ -39,7 +49,7 @@ it is possible to alias more complex bash scripts as well:
 
 ```yaml
 commands:
-  hello: echo "Hello, Gnarly!"
+  gecho: echo "gecko"
   sysinfo:
     script: |
       echo "=== System Information ==="
@@ -72,23 +82,23 @@ Model name:                           Intel(R) Core(TM) i9-14900KF
 ## Config File Search Path
 
 As described in the Overview, the commands exutable by `gnarly` are defined in
-a `bash.yml` file located in a directory named `.gnarly`.
+a `.gnarly.yml` file.
 
-`gnarly` first looks for this `.gnarly` directory in the current working
-directory. If it exists and contains a file named `bash.yml`, then the command
-to be executed is looked up in this file. Otherwise, `gnarly` iterates through
-all parent directories of the current working directory looking for a
-`.gnarly/bash.yml` file until one is found. If no file is found, then a
-"command not found" error message is echoed, and `gnarly` exits.
+`gnarly` first looks for this `.gnarly.yml` file in the current working
+directory. If it exists, then the command to be executed is looked up in this
+file. Otherwise, `gnarly` iterates through all parent directories of the
+current working directory looking for a `.gnarly.yml` file until one is found.
+If no file is found, then a "command not found" error message is echoed, and
+`gnarly` exits.
 
 For example, say you have created a `gnarly` config file at this location:
 
-`/projects/myproj/.gnarly/bash.yml`
+`/projects/myproj/.gnarly.yml`
 
 In that case, you can execute `gnarly` commands from this config file in any
 child directory of `/projects/myproj`, such as `/projects/myproj/src/app/profile`.
 
-In this way, the commands configured in your `.gnarly/bash.yml` file can be
+In this way, the commands configured in your `.gnarly.yml` file can be
 tailored to this particular project and activated only when you are in this
 directory or any subdirectory. Contrast this with bash aliases, which apply
 regardless of which directory you are in.
@@ -99,28 +109,53 @@ can be checked into version control and shared with other team members as well.
 
 ## Initialize a Directory for Use With Gnarly
 
-To initialize the current working directory with a `./gnarly/bash.yml` file,
+To initialize the current working directory with a `.gnarly.yml` file,
 issue the following command:
 
 ```bash
 $ gnarly init
-Creating .gnarly directory
-Creating .gnarly/bash.yml
+Creating .gnarly.yml
 ```
 
-This will create the `.gnarly` directory with a `bash.yml` file that is
-initialized with a single `hello` command that you can use to quickly test
-(and then replace with your own commands).
+This will create the `.gnarly.yml` file that is initialized with a single
+`gecho` command that you can use to quickly test (and then replace with your
+own commands).
 
-The created `bash.yml` file includes a helpful comment at the top that shows
+The created `.gnarly.yml` file includes a helpful comment at the top that shows
 the supported command definition formats.
 
-## Roadmap
+## Environment Variables
 
-Features planned for the future include:
+### Overridable Settings
 
-- Search for multiple gnarly config files in the cwd hierarchy, with override
-  capability
-- Gnarly CLI features:
-  - `gnarly exec [cmd]`
-  - `gnarly add [name] [command|script] ...`
+These environment variables are given default values by `gnarly.sh`, but can
+be overridden from outside of `gnarly.sh` if desired.
+
+| Name                 | Description                                                                                   | Default Value |
+| -------------------- | --------------------------------------------------------------------------------------------- | ------------- |
+| `GNARLY_DEBUG`       | Enables gnarly debug logging (`0` = off; any other value = on)                                | `0`           |
+| `GNARLY_FILENAME`    | Name of the gnarly config file                                                                | `.gnarly.yml` |
+| `GNARLY_PATH`        | A colon (:) separated list of allowed gnarly config file search paths                         | `$HOME`       |
+
+### Fixed Settings
+
+These environment variables are set at the time `gnarly.sh` is sourced. Their values are determined automatically and
+are not designed to be overridden outside of `gnarly.sh`.
+
+Note that the `$GNARLY_HOME` variable must point to the location of the sourced `gnarly.sh` file. It is therefore
+determined at the time of sourcing and is not intended to be specified outside of `gnarly.sh`. In this respect, it
+is is unlike other `*_HOME` environment variables with which you may be familiar.
+
+| Name                 | Description                                                                                   | Value                                          |
+| -------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `GNARLY_HOME`        | Full path to the gnarly installation directory; determined at the time `gnarly.sh` is sourced | `$(dirname "$(realpath "${BASH_SOURCE[0]}")")` |
+
+### Dynamic Settings
+
+These environment variables are set when gnarly finds and activates a `.gnarly.yml` file. They can be useful to
+reference within command definitions inside of a `.gnarly.yml` file.
+
+| Name                 | Description                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `GNARLY_CFG_DIR`     | Full path to the directory that holds the in-effect gnarly config file                      |
+| `GNARLY_CFG_FILE`    | Full path to the gnarly config file in effect                                               |

@@ -1,6 +1,10 @@
 # Shared by all tests
 
-script_dir=$(dirname "$(realpath "$0")")
+# TEST_DIR=$(mktemp -d --tmpdir=/tmp gnarly-XXXX)
+readonly TEST_DIR=testdir
+GNARLY_PATH=$(realpath "$TEST_DIR")
+
+script_dir=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 
 # Ensure SHUNIT_HOME is set to the shunit2 directory
 if [ "$SHUNIT_HOME" = "" ]; then
@@ -32,9 +36,7 @@ setUp() {
     source "$(dirname "$0")/../gnarly.sh"
 
     # Create a temporary test directory
-    # TEST_DIR=$(mktemp -d --tmpdir=/tmp gnarly-XXXX)
-    TEST_DIR=testdir
-    mkdir -p "$TEST_DIR/$GNARLY_CONFIG_DIR"
+    mkdir -p "$TEST_DIR"
     cd "$TEST_DIR" || exit 1
 }
 

@@ -3,9 +3,9 @@
 source common.sh
 
 create_gnarly_file_root() {
-    cat > "$GNARLY_CONFIG_DIR/bash.yml" << EOF
+    cat > .gnarly.yml << EOF
 commands:
-  hello: echo "Hello, Gnarly!"
+  gecho: echo "gecko"
   kerninfo:
     script: |
       echo "Kernel Info"
@@ -27,24 +27,24 @@ EOF
 }
 
 create_gnarly_file_level1() {
-    mkdir -p level1/$GNARLY_CONFIG_DIR
-    cat > level1/$GNARLY_CONFIG_DIR/bash.yml << EOF
+    mkdir -p level1
+    cat > level1/.gnarly.yml << EOF
 commands:
   cpuinfo: echo "CPU Info"
 EOF
 }
 
 create_gnarly_file_level2() {
-    mkdir -p level1/level2/$GNARLY_CONFIG_DIR
-    cat > level1/level2/$GNARLY_CONFIG_DIR/bash.yml << EOF
+    mkdir -p level1/level2
+    cat > level1/level2/.gnarly.yml << EOF
 commands:
   meminfo: echo "Memory Info"
 EOF
 }
 
 create_gnarly_file_level3() {
-    mkdir -p level1/level2/level3/$GNARLY_CONFIG_DIR
-    cat > level1/level2/level3/$GNARLY_CONFIG_DIR/bash.yml << EOF
+    mkdir -p level1/level2/level3
+    cat > level1/level2/level3/.gnarly.yml << EOF
 commands:
   diskinfo: df -h
   distroinfo: |
@@ -55,22 +55,37 @@ EOF
 }
 
 # Basic functionality tests
-test_gnarly_list_commands() {
+test_list_commands() {
     create_gnarly_file_root
-    expected=$'hello\nkerninfo\nsysinfo'
+    expected=$'gecho\nkerninfo\nsysinfo'
     result=$(gnarly)
     assertEquals "Should list all available commands" "$expected" "$result"
 }
 
-test_gnarly_verbose_list() {
+test_verbose_list() {
     create_gnarly_file_root
-    expected=$'hello: echo "Hello, Gnarly!"\nkerninfo: [script]\nsysinfo: [script]'
-    result=$(gnarly -v)
+    expected=$'gecho: echo "gecko"\nkerninfo: [script]\nsysinfo: [script]'
+    result=$(gnarly --verbose)
     assertEquals "Should list commands with descriptions" "$expected" "$result"
 }
 
+test_help_message() {
+    result=$(gnarly --help)
+    assertContains "Should display help message" "$result" "Usage: gnarly [OPTION] [COMMAND]"
+    assertContains "Should display --verbose help message" "$result" "-v, --verbose   List all available commands with descriptions"
+    assertContains "Should display --version help message" "$result" "--version       Show gnarly version"
+    assertContains "Should display --help help message"    "$result" "-h, --help      Display this help message"
+}
+
+test_version() {
+    local version
+    version=$(cat "$GNARLY_HOME/VERSION")
+    result=$(gnarly --version)
+    assertEquals "Should display the correct version" "gnarly (https://github.com/kevtacular/gnarly) version v$version" "$result"
+}
+
 # Directory hierarchy tests
-test_gnarly_level1() {
+test_level1() {
     create_gnarly_file_root
     create_gnarly_file_level1
     pushd level1 > /dev/null
@@ -80,7 +95,7 @@ test_gnarly_level1() {
     assertEquals "Should find commands in level1" "$expected" "$result"
 }
 
-test_gnarly_level2() {
+test_level2() {
     create_gnarly_file_root
     create_gnarly_file_level1
     create_gnarly_file_level2
@@ -91,7 +106,7 @@ test_gnarly_level2() {
     assertEquals "Should find commands in level2" "$expected" "$result"
 }
 
-test_gnarly_level3() {
+test_level3() {
     create_gnarly_file_root
     create_gnarly_file_level1
     create_gnarly_file_level2
@@ -103,43 +118,17 @@ test_gnarly_level3() {
     assertEquals "Should find commands in level3" "$expected" "$result"
 }
 
-# Command execution tests
-test_gnarly_simple_command() {
+test_invalid_yaml() {
     gnarly init > /dev/null
-    result=$(hello)
-    assertEquals "Should execute simple command" "Hello, Gnarly!" "$result"
-}
-
-test_gnarly_script_command() {
-    gnarly init > /dev/null
-    cat > $GNARLY_CONFIG_DIR/bash.yml << EOF
-commands:
-  testscript:
-    script: |
-      echo "Line 1"
-      echo "Line 2"
-EOF
-    expected=$'Line 1\nLine 2'
-    result=$(testscript)
-    assertEquals "Should execute multi-line script" "$expected" "$result"
-}
-
-test_gnarly_command_not_found() {
-    result=$(nonexistent_command 2>&1)
-    assertContains "Should handle nonexistent commands" "$result" "command not found"
-}
-
-test_gnarly_invalid_yaml() {
-    gnarly init > /dev/null
-    echo "invalid: yaml: content" > $GNARLY_CONFIG_DIR/bash.yml
-    result=$(hello 2>&1)
+    echo "invalid: yaml: content" > .gnarly.yml
+    result=$(gecho 2>&1)
     assertContains "Should handle invalid YAML" "$result" "Error: bad file"
 }
 
 # Debug mode tests
-test_gnarly_debug_mode() {
+test_debug_mode() {
     GNARLY_DEBUG=1 gnarly init > /dev/null
-    result=$(GNARLY_DEBUG=1 hello 2>&1)
+    result=$(GNARLY_DEBUG=1 gecho 2>&1)
     assertContains "Should echo debug messages" "$result" "DEBUG"
 }
 

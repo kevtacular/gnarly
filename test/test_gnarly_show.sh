@@ -3,15 +3,15 @@
 source common.sh
 
 # Show command tests
-test_gnarly_show_simple() {
+test_simple() {
     gnarly init > /dev/null
-    result=$(gnarly show hello)
-    assertEquals "Should show simple command" 'echo "Hello, Gnarly!"' "$result"
+    result=$(gnarly show gecho)
+    assertEquals "Should show simple command" 'echo "gecko"' "$result"
 }
 
-test_gnarly_show_script() {
+test_script() {
     gnarly init > /dev/null
-    cat > $GNARLY_CONFIG_DIR/bash.yml << EOF
+    cat > .gnarly.yml << EOF
 commands:
   testscript:
     script: |
@@ -23,10 +23,10 @@ EOF
     assertEquals "Should show script command" "$expected" "$result"
 }
 
-test_gnarly_show_nonexistent() {
+test_nonexistent() {
     # Nonexistent gnarly config directory
     result=$(gnarly show nonexistent 2>&1)
-    assertContains "Should handle nonexistent command" "$result" "No gnarly configuration found"
+    assertContains "Should handle nonexistent gnarly config directory" "$result" "No gnarly configuration found"
 
     # Existing gnarly config directory but nonexistent command
     gnarly init > /dev/null
