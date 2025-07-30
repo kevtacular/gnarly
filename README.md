@@ -5,7 +5,7 @@
 To install gnarly, you can use the `install.sh` script.
 
 ```bash
-$ curl -sSL https://raw.githubusercontent.com/kevtacular/gnarly/master/scripts/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/kevtacular/gnarly/master/scripts/install.sh | bash
 ```
 
 This will install `gnarly` to `~/.gnarly` and add a line to your `.bashrc` to source the script. You will need to open a new terminal session or run `source ~/.bashrc` for the changes to take effect.
