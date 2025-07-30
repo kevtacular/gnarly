@@ -14,9 +14,11 @@ INSTALL_DIR="$HOME/.gnarly"
 
 # Find the latest version from GitHub releases
 get_latest_release() {
-    curl --silent "https://api.github.com/repos/$GITHUB_REPO/releases/latest" | # Get latest release from GitHub api
-    grep '"tag_name":' |                                                     # Get tag line
-    sed -E 's/.*"v*([^"]+)".*/\1/'                                         # Pluck JSON value
+    # Get all releases and extract the first (most recent) tag
+    curl --silent "https://api.github.com/repos/$GITHUB_REPO/releases" | 
+        grep '"tag_name":' |
+        head -n 1 |
+        sed -E 's/.*"v*([^"]+)".*/\1/'
 }
 
 # Install gnarly
