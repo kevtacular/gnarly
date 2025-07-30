@@ -48,13 +48,14 @@ install_gnarly() {
     curl -fsSL "https://raw.githubusercontent.com/$GITHUB_REPO/v$version/LICENSE" -o "$INSTALL_DIR/LICENSE"
 
     # Add sourcing to .bashrc if it's not already there
-    local source_line="source \"$INSTALL_DIR/gnarly.sh\""
+    local source_line="source \"\$HOME/.gnarly/gnarly.sh\""
     if ! grep -q "$source_line" "$HOME/.bashrc"; then
         echo "Adding gnarly to your .bashrc..."
         cat >> "$HOME/.bashrc" << EOF
 
-# ===== Gnarly configuration =====
+# ================== Gnarly configuration ===================
 # Allowed search paths for gnarly configuration files
+# (Separate multiple paths with colons)
 export GNARLY_PATH=\$HOME
 
 # Source the gnarly script to make it available in your shell
@@ -62,7 +63,7 @@ $source_line
 
 # Uncomment for a convenient gnarly alias
 # alias g='gnarly'
-# ================================
+# ===========================================================
 EOF
     fi
 
