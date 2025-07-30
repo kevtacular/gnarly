@@ -51,7 +51,19 @@ install_gnarly() {
     local source_line="source \"$INSTALL_DIR/gnarly.sh\""
     if ! grep -q "$source_line" "$HOME/.bashrc"; then
         echo "Adding gnarly to your .bashrc..."
-        echo -e "\n# Gnarly configuration\nexport GNARLY_PATH=$HOME\n$source_line" >> "$HOME/.bashrc"
+        cat >> "$HOME/.bashrc" << EOF
+
+# ===== Gnarly configuration =====
+# Allowed search paths for gnarly configuration files
+export GNARLY_PATH=\$HOME
+
+# Source the gnarly script to make it available in your shell
+$source_line
+
+# Uncomment for a convenient gnarly alias
+# alias g='gnarly'
+# ================================
+EOF
     fi
 
     echo "Gnarly installed successfully!"
